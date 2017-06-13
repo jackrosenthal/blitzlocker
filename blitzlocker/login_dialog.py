@@ -1,7 +1,6 @@
 from blitzlocker.db import Site, Org, db
 from blitzlocker import Gtk, Gdk
 
-
 class LoginDialog(Gtk.Window):
     def __init__(self):
         self.site = None
@@ -22,8 +21,6 @@ class LoginDialog(Gtk.Window):
         self.site_list = Gtk.ListStore(str)
         for self.site in db.query(Site).all():
             self.site_list.append((self.site.base_url,))
-        self.site_list.append(('Default Site',))
-        self.site_list.append(('Also a Site',))
         self.site_combo = Gtk.ComboBox.new_with_model(self.site_list)
         self.site_combo.connect('changed', self.on_site_changed)
         self.site_combo_cr = Gtk.CellRendererText()
@@ -38,19 +35,8 @@ class LoginDialog(Gtk.Window):
         self.org_tree = Gtk.TreeView(self.org_list)
         self.org_tree_cr = Gtk.CellRendererText()
         for self.org in db.query(Org).all():
-            if(org.site == site):
-                self.org_list.append((org.username, org.password))
-        self.org_list.append(('DEFAULT','PW'))
-        self.org_list.append(('DEFAULT','PW'))
-        self.org_list.append(('DEFAULT','PW'))
-        self.org_list.append(('DEFAULT','PW'))
-        self.org_list.append(('DEFAULT','PW'))
-        self.org_list.append(('DEFAULT','PW'))
-        self.org_list.append(('DEFAULT2','PWw'))
-        self.org_list.append(('DEFAULT2','PWw'))
-        self.org_list.append(('DEFAULT2','PWw'))
-        self.org_list.append(('DEFAULT2','PWw'))
-        self.org_list.append(('DEFAULT2','PWw'))
+            if(self.org.site == site):
+                self.org_list.append((self.org.username, self.org.password))
         logins_name.pack_start(self.org_tree_cr, True)
         logins_name.add_attribute(self.org_tree_cr, 'text', 0)
         self.org_tree.append_column(logins_name)
@@ -97,10 +83,8 @@ class LoginDialog(Gtk.Window):
     def repopulate_org(self):
         self.org_list.clear()
         for self.org in db.query(Org).all():
-            if(org.site == site):
-                self.org_list.append((org.username, org.password))
-        self.org_list.append(('DEFAULT','PW'))
-        self.org_list.append(('DEFAULT','PW'))
+            if(self.org.site == site):
+                self.org_list.append((self.org.username, self.org.password))
         self.org_tree.set_model(self.org_list)
 
     def on_site_changed(self, combo):
