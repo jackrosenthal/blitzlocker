@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+from blitzlocker.db import seed, db_file_path
+import os
+if not os.path.isfile(db_file_path):
+    seed()
+
+from blitzlocker import Gtk
+from blitzlocker.systrayicon import TrayIcon
+from blitzlocker.blitzmenu import default_menu
+
+icon = TrayIcon(default_menu)
+icon.set_visible(True)
+Gtk.main()
