@@ -1,5 +1,8 @@
 from blitzlocker.db import db, Site, AppConfigItem
 from blitzlocker import Gtk, Gdk
+import re
+
+valid_url_p = re.compile(r'^https?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]')
 
 class ConfigDialog(Gtk.Window):
     def __init__(self):
@@ -7,24 +10,48 @@ class ConfigDialog(Gtk.Window):
         self.set_default_size(640, 480)
         self.set_resizable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
+        self.vbox = Gtk.Box()
+        self.vbox.set_orientation(Gtk.Orientation.VERTICAL)
+        self.vbox.set_spacing(6)
+        self.add(self.vbox)
 
         self.notebook = Gtk.Notebook()
-        self.add(self.notebook)
+        self.vbox.add(self.notebook)
 
-        self.notebook.append_page(SitesPage(), Gtk.Label('Sites'))
-        self.notebook.append_page(BrowserPage(), Gtk.Label('Web Browser'))
+        self.actions = Gtk.ButtonBox()
+        self.actions.set_layout(Gtk.ButtonBoxStyle(4))
+        self.actions.set_spacing(6)
+        self.actions.add(Gtk.Box())
+        self.ok_button = Gtk.Button(label="OK")
+        self.ok_button.connect("clicked", self.ok_clicked)
+        self.actions.add(self.ok_button)
+        self.vbox.add(self.actions)
+        self.vbox.add(Gtk.Box())
+
+        self.notebook.append_page(SitesPage(window=self), Gtk.Label('Sites'))
+        self.notebook.append_page(BrowserPage(window=self), Gtk.Label('Web Browser'))
 
         self.notebook.show_all()
 
-class SitesPage(Gtk.ListBox):
-    def __init__(self):
+    def ok_clicked(self, widget):
+        self.hide()
+
+class SitesPage(Gtk.Box):
+    def __init__(self, window):
         Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
+        self.set_homogeneous(False)
+        self.set_spacing(6)
+
+        self.window = window
 
         self.bbox = Gtk.ButtonBox()
         self.add_site_button = Gtk.Button(label='Add Site...')
         self.rm_site_button = Gtk.Button(label='Remove Site', sensitive=False)
         self.bbox.add(self.add_site_button)
         self.bbox.add(self.rm_site_button)
+
+        self.add_site_button.connect("clicked", self.open_add_site)
 
         self.add(self.bbox)
 
@@ -47,10 +74,55 @@ class SitesPage(Gtk.ListBox):
         self.add(self.scroll)
         self.show_all()
 
+    def open_add_site(self, widget):
+        asd = AddSiteDialog(liststore=self.liststore, transient_for=self.window, modal=True)
+        asd.present()
+
 class BrowserPage(Gtk.Box):
-    def __init__(self):
+    def __init__(self, window):
         Gtk.Box.__init__(self)
+        self.window = window
         self.set_border_width(10)
         self.add(Gtk.Label("Web Browser Configuration!"))
+
+class AddSiteDialog(Gtk.Dialog):
+    def __init__(self, liststore, *args, **kwargs):
+        Gtk.Dialog.__init__(self, *args, title="Add Site", **kwargs)
+        self.liststore = liststore
+        self.set_default_size(250, 100)
+
+        self.base_textbox = Gtk.Entry()
+        self.base_textbox.set_placeholder_text("https://foo.bar.baz.salesforce.com")
+        self.base_textbox.set_activates_default(True)
+        base_url_box = Gtk.Box(spacing=6)
+        base_url_box.add(Gtk.Label("Base URL"))
+        base_url_box.add(self.base_textbox)
+        self.get_content_area().add(base_url_box)
+
+        self.add_button("Cancel", 0)
+        asb = self.add_button("Add Site", 1)
+        asb.set_can_default(True)
+        asb.grab_default()
+
+        self.connect("response", self.response)
+        self.show_all()
+
+    def response(self, widget, response_id):
+        if response_id == 0:
+            self.destroy()
+        elif response_id == 1:
+            text = self.base_textbox.get_text()
+            if not valid_url_p.match(text):
+                msg = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,
+                    Gtk.ButtonsType.OK, "You must enter a valid URL")
+                msg.run()
+                msg.destroy()
+                return
+            if text.endswith('/'):
+                text = text[:-1]
+            db.add(Site(base_url=text))
+            db.commit()
+            self.liststore.append([text])
+            self.destroy()
 
 config_dialog = ConfigDialog()
