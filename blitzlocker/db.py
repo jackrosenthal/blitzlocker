@@ -27,6 +27,7 @@ class Org(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
+    description = Column(String, nullable=True)
 
     site_id = Column(Integer, ForeignKey('sites.id', ondelete='CASCADE'), nullable=False)
     site = relationship('Site', back_populates='orgs')
