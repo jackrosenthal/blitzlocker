@@ -1,5 +1,6 @@
 from blitzlocker.db import db, Site, AppConfigItem
 from blitzlocker import Gtk, Gdk
+from blitzlocker import browserutil
 import re
 
 valid_url_p = re.compile(r'^https?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]')
@@ -100,9 +101,82 @@ class SitesPage(Gtk.Box):
 class BrowserPage(Gtk.Box):
     def __init__(self, window):
         Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
+        self.set_homogeneous(False)
+        self.set_spacing(6)
+
         self.window = window
-        self.set_border_width(10)
-        self.add(Gtk.Label("Web Browser Configuration!"))
+
+        private = db.query(AppConfigItem)\
+                .filter(AppConfigItem.key == 'browser.private')\
+                .one_or_none()
+        if private:
+            private = private.value
+
+        choice = db.query(AppConfigItem)\
+                .filter(AppConfigItem.key == 'browser.choice')\
+                .one_or_none()
+        if choice:
+            choice = choice.value
+
+        self.hbox = Gtk.Box(spacing=6)
+        self.hbox.add(Gtk.Label("Default Browser"))
+
+        self.browser_store = Gtk.ListStore(str)
+        active_choice = None
+        for b in browserutil.system_browsers:
+            treeiter = self.browser_store.append([b])
+            if b == choice:
+                active_choice = treeiter
+
+        self.check_private = Gtk.CheckButton("Use Private Browser Window")
+        self.check_private.set_active(bool(private))
+        self.check_private.connect("toggled", self.private_checkbox_toggled)
+
+        self.browser_combo = Gtk.ComboBox.new_with_model(self.browser_store)
+        renderer_text = Gtk.CellRendererText()
+        self.browser_combo.pack_start(renderer_text, True)
+        self.browser_combo.add_attribute(renderer_text, "text", 0)
+        self.browser_combo.connect("changed", self.browser_combo_changed)
+        if active_choice:
+            self.browser_combo.set_active_iter(active_choice)
+        self.hbox.add(self.browser_combo)
+
+        self.add(self.hbox)
+        self.add(self.check_private)
+
+    def private_checkbox_toggled(self, widget):
+        value = self.check_private.get_active()
+
+        # clear any existing value in the db
+        db.commit()
+        db.query(AppConfigItem)\
+            .filter(AppConfigItem.key == 'browser.private')\
+            .delete(synchronize_session=False)
+        db.commit()
+        db.add(AppConfigItem(key='browser.private', value=value))
+        db.commit()
+
+    def browser_combo_changed(self, widget):
+        tree_iter = self.browser_combo.get_active_iter()
+        if tree_iter != None:
+            model = self.browser_combo.get_model()
+            name = model[tree_iter][0]
+            if 'private' in browserutil.browsers[name].keys():
+                self.check_private.set_sensitive(True)
+            else:
+                self.check_private.set_active(False)
+                self.private_checkbox_toggled(None)
+                self.check_private.set_sensitive(False)
+
+            # clear any existing value in the db
+            db.commit()
+            db.query(AppConfigItem)\
+                .filter(AppConfigItem.key == 'browser.choice')\
+                .delete(synchronize_session=False)
+            db.commit()
+            db.add(AppConfigItem(key='browser.choice', value=name))
+            db.commit()
 
 class AddSiteDialog(Gtk.Dialog):
     def __init__(self, liststore, *args, **kwargs):
