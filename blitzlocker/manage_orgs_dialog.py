@@ -15,7 +15,6 @@ class ManageOrgsDialog(Gtk.Window):
         for site in db.query(Site).all():
             self.liststore.append([site.base_url])
         
-        self.liststore.append(("google.com",))
         self.treeview=Gtk.TreeView(self.liststore)
         self.site_combo_box = Gtk.ComboBox.new_with_model(self.liststore)
         site_url_cr = Gtk.CellRendererText()
@@ -49,25 +48,27 @@ class AddSiteDialog(Gtk.Dialog):
         self.grid = Gtk.Grid()
 
         self.user_textbox = Gtk.Entry()
-        self.user_textbox.set_placeholder_text("Username")
+        self.user_textbox.set_placeholder_text("Username ")
         self.user_textbox.set_activates_default(True)
-        user_box = Gtk.Box(spacing=6)
-        user_box.add(Gtk.Label("Username"))
-        user_box.add(self.user_textbox)
-        self.get_content_area().add(user_box)
-        
+        self.user_label = (Gtk.Label("Username"))
+
+        self.grid.attach(self.user_label,0,0,1,1)
+        self.grid.attach_next_to(self.user_textbox,self.user_label,Gtk.PositionType.RIGHT,2,1)
+
         self.pw_textbox = Gtk.Entry()
         self.pw_textbox.set_placeholder_text("********")
-        pw_box = Gtk.Box(spacing=6)
-        pw_box.add(Gtk.Label("Password "))
-        pw_box.add(self.pw_textbox)
-        self.get_content_area().add(pw_box)
+        self.pw_label = Gtk.Label("Password ")
+        self.gen_pw_button = Gtk.Button(label = 'Generate')
+        
+        self.grid.attach_next_to(self.pw_label,self.user_label,Gtk.PositionType.BOTTOM,1,1)
+        self.grid.attach_next_to(self.pw_textbox,self.pw_label,Gtk.PositionType.RIGHT,1,1)
+        self.grid.attach_next_to(self.gen_pw_button,self.pw_textbox,Gtk.PositionType.RIGHT,1,1)
 
         self.desc_textbox = Gtk.Entry()
-        desc_box = Gtk.Box(spacing=6)
-        desc_box.add(Gtk.Label("Description"))
-        desc_box.add(self.desc_textbox)
-        self.get_content_area().add(desc_box)
+        self.desc_label = Gtk.Label("Description")
+        
+        self.grid.attach_next_to(self.desc_label,self.pw_label,Gtk.PositionType.BOTTOM,1,1)
+        self.grid.attach_next_to(self.desc_textbox,self.desc_label,Gtk.PositionType.RIGHT,2,1)
 
         self.add_button("Cancel", 0)
         asb = self.add_button("Add Org", 1)
@@ -75,6 +76,7 @@ class AddSiteDialog(Gtk.Dialog):
         asb.grab_default()
 
         self.connect("response", self.response)
+        self.get_content_area().add(self.grid)
         self.show_all()
 
 
