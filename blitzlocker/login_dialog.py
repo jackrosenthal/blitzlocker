@@ -7,7 +7,7 @@ class LoginDialog(Gtk.Window):
         __org = None
         __ROWS = 1
         __COLS = 3
-        
+
         Gtk.Window.__init__(self, title="Login")
         self.set_resizable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
@@ -51,7 +51,7 @@ class LoginDialog(Gtk.Window):
                 Gtk.PositionType.BOTTOM,
                 1,
                 2,
-        )
+                )
 
         #The Cancel Button
         self.cancel_button = Gtk.Button.new_with_label('Cancel')
@@ -74,7 +74,7 @@ class LoginDialog(Gtk.Window):
                 )
 
     def on_org_changed(self, combo):
-        __org = combo
+            __org = combo
 
     def on_site_changed(self, combo):
         __site = combo[0]
