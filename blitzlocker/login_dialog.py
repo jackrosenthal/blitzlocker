@@ -21,7 +21,7 @@ class LoginDialog(Gtk.Window):
         #The Site list
         self.site_list = Gtk.ListStore(str)
         for self.site in db.query(Site).all():
-            self.site_list.append((site.base_url,))
+            self.site_list.append((self.site.base_url,))
         self.site_list.append(('Default Site',))
         self.site_list.append(('Also a Site',))
         self.site_combo = Gtk.ComboBox.new_with_model(self.site_list)
