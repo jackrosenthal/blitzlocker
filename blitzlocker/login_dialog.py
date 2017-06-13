@@ -81,7 +81,7 @@ class LoginDialog(Gtk.Window):
 
     def repopulate_org(self):
         self.org_list.clear()
-        for org in self.site.orgs:
+        for org in db.query(Site).filter(Site.base_url==self.site).one().orgs:
             self.org_list.append([org.username, org.password])
         self.org_tree.set_model(self.org_list)
 
