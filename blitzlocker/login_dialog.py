@@ -5,6 +5,9 @@ ROWS = 1
 COLS = 3
 
 class LoginDialog(Gtk.Window):
+    __site = None
+    __org = None
+    
     def __init__(self):
         Gtk.Window.__init__(self, title="Login")
         self.set_resizable(False)
@@ -16,7 +19,7 @@ class LoginDialog(Gtk.Window):
         #The Site list
         site_list = Gtk.ListStore(str)
         for site in db.query(Site).all():
-            site_list.append((site.base_url),)
+            site_list.append((site.base_url,))
         site_list.append(('Default Site',))
         site_combo = Gtk.ComboBox.new_with_model(site_list)
         site_combo.connect('changed', self.on_site_changed)
@@ -29,7 +32,8 @@ class LoginDialog(Gtk.Window):
         #The Org Tree
         org_list = Gtk.ListStore(str, str)
         for org in db.query(Org).all():
-            org_list.append((org.username, org.password))
+            if(org.site == __site):
+                self.org_list.append((org.username, org.password))
         org_list.append(('DEFAULT','PW'))
         org_list.append(('DEFAULT2','PWw'))
         logins_name = Gtk.TreeViewColumn("Logins")
@@ -70,10 +74,10 @@ class LoginDialog(Gtk.Window):
                 )
 
     def on_org_changed(self, combo):
-        print('List Changed')
+        __org = combo
 
     def on_site_changed(self, combo):
-        print('Site Changed')
+        __site = combo[0]
 
     def click_cancel(self, button):
         self.hide()
