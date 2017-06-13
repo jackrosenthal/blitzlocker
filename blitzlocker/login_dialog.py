@@ -35,7 +35,7 @@ class LoginDialog(Gtk.Window):
         self.org_tree = Gtk.TreeView(self.org_list)
         self.org_tree_cr = Gtk.CellRendererText()
         for org in self.site.orgs:
-            self.org_list.append(org)
+            self.org_list.append([org.username, org.password])
         logins_name.pack_start(self.org_tree_cr, True)
         logins_name.add_attribute(self.org_tree_cr, 'text', 0)
         self.org_tree.append_column(logins_name)
@@ -82,7 +82,7 @@ class LoginDialog(Gtk.Window):
     def repopulate_org(self):
         self.org_list.clear()
         for org in self.site.orgs:
-            self.org_list.append(org)
+            self.org_list.append([org.username, org.password])
         self.org_tree.set_model(self.org_list)
 
     def on_site_changed(self, combo):
