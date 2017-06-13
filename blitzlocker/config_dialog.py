@@ -4,7 +4,8 @@ from blitzlocker import Gtk, Gdk
 class ConfigDialog(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Configure BlitzLocker")
-        self.resizable = False
+        self.set_default_size(640, 480)
+        self.set_resizable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
 
         self.notebook = Gtk.Notebook()
@@ -31,13 +32,20 @@ class SitesPage(Gtk.ListBox):
         for site in db.query(Site).all():
             self.liststore.append([site.base_url])
 
+        self.column = Gtk.TreeViewColumn("Base URL")
+        base_url_cr = Gtk.CellRendererText()
+        self.column.pack_start(base_url_cr, True)
+        self.column.add_attribute(base_url_cr, "text", 0)
+
         self.treeview = Gtk.TreeView(self.liststore)
+        self.treeview.append_column(self.column)
 
         self.scroll = Gtk.ScrolledWindow()
         self.scroll.set_vexpand(True)
         self.scroll.add(self.treeview)
 
         self.add(self.scroll)
+        self.show_all()
 
 class BrowserPage(Gtk.Box):
     def __init__(self):
