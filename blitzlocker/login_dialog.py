@@ -94,10 +94,10 @@ class LoginDialog(Gtk.Window):
         self.hide()
 
     def click_login(self, button):
-        open_configured_browser(self.site + 
+        open_configured_browser(self.site +
                 '?un=' +
                 self.org[0] +
-                '&pw=' + 
+                '&pw=' +
                 self.org[1]
                 )
         print('login clicked')
