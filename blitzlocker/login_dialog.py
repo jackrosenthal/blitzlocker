@@ -6,7 +6,7 @@ class LoginDialog(Gtk.Window):
         __site = None
         __org = None
         __ROWS = 1
-        __COLS = 3
+        __COLS = 4
 
         Gtk.Window.__init__(self, title="Login")
         self.set_resizable(False)
@@ -27,7 +27,7 @@ class LoginDialog(Gtk.Window):
         site_combo.pack_start(site_combo_cr, True)
         site_combo.add_attribute(site_combo_cr, 'text', 0)
         site_combo.set_wrap_width(__COLS)
-        box.add(site_combo)
+        box.attach(site_combo, 0, 0, __COLS, __ROWS)
 
         #The Org Tree
         org_list = Gtk.ListStore(str, str)
@@ -49,8 +49,8 @@ class LoginDialog(Gtk.Window):
         box.attach_next_to(org_scroll,
                 site_combo,
                 Gtk.PositionType.BOTTOM,
-                1,
-                2,
+                2*__ROWS,
+                2*__ROWS,
                 )
 
         #The Cancel Button
@@ -59,8 +59,8 @@ class LoginDialog(Gtk.Window):
         box.attach_next_to(self.cancel_button,
                 org_scroll,
                 Gtk.PositionType.BOTTOM,
-                1,
-                1,
+                __ROWS,
+                __ROWS,
                 )
 
         #The Login button
@@ -69,8 +69,8 @@ class LoginDialog(Gtk.Window):
         box.attach_next_to(self.login_button,
                 self.cancel_button,
                 Gtk.PositionType.RIGHT,
-                1,
-                1,
+                __ROWS,
+                __ROWS,
                 )
 
     def on_org_changed(self, combo):
