@@ -4,15 +4,17 @@ from blitzlocker import Gtk, Gdk
 class LoginDialog(Gtk.Window):
     def __init__(self):
         __site = None
-        __org = None
+        __un = None
+        __pw = None
         __ROWS = 1
-        __COLS = 4
+        __COLS = 5
 
         Gtk.Window.__init__(self, title="Login")
         self.set_resizable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.set_border_width(15)
         self.set_deletable(False)
+        self.set_default_size(-1, 320)
         box = Gtk.Grid()
         self.add(box)
 
@@ -35,6 +37,32 @@ class LoginDialog(Gtk.Window):
             if(org.site == __site):
                 self.org_list.append((org.username, org.password))
         org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT','PW'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
+        org_list.append(('DEFAULT2','PWw'))
         org_list.append(('DEFAULT2','PWw'))
         logins_name = Gtk.TreeViewColumn("Logins")
         org_tree = Gtk.TreeView(org_list)
@@ -45,12 +73,14 @@ class LoginDialog(Gtk.Window):
         org_tree.get_selection().connect('changed', self.on_org_changed)
         org_scroll = Gtk.ScrolledWindow()
         org_scroll.set_vexpand(True)
+        org_scroll.set_min_content_height(__COLS)
+        org_scroll.set_max_content_height(__COLS)
         org_scroll.add(org_tree)
         box.attach_next_to(org_scroll,
                 site_combo,
                 Gtk.PositionType.BOTTOM,
                 2*__ROWS,
-                2*__ROWS,
+                __COLS,
                 )
 
         #The Cancel Button
@@ -74,10 +104,12 @@ class LoginDialog(Gtk.Window):
                 )
 
     def on_org_changed(self, combo):
-            __org = combo
+        __un, __pw = combo.get_selected_rows()
+        print(__un, __pw)
 
     def on_site_changed(self, combo):
-        __site = combo[0]
+        __site = combo.get_entry_text_column()
+        print(__site)
 
     def click_cancel(self, button):
         self.hide()
