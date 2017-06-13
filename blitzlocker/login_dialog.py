@@ -1,18 +1,18 @@
 from blitzlocker.db import Site, Org, db
 from blitzlocker import Gtk, Gdk
 
-ROWS = 1
-COLS = 3
-
 class LoginDialog(Gtk.Window):
-    __site = None
-    __org = None
-    
     def __init__(self):
+        __site = None
+        __org = None
+        __ROWS = 1
+        __COLS = 3
+        
         Gtk.Window.__init__(self, title="Login")
         self.set_resizable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.set_border_width(15)
+        self.set_deletable(False)
         box = Gtk.Grid()
         self.add(box)
 
@@ -26,7 +26,7 @@ class LoginDialog(Gtk.Window):
         site_combo_cr = Gtk.CellRendererText()
         site_combo.pack_start(site_combo_cr, True)
         site_combo.add_attribute(site_combo_cr, 'text', 0)
-        site_combo.set_wrap_width(COLS)
+        site_combo.set_wrap_width(__COLS)
         box.add(site_combo)
 
         #The Org Tree
