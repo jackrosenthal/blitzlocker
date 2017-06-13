@@ -1,13 +1,11 @@
 from blitzlocker import Gtk
 
-class AboutBlitzLocker(Gtk.AboutDialog):
-    def __init__(self):
-        self.program_name = "BlitzLocker"
-        self.version = "0.0.1"
-        self.comments = "A password manager for SalesForce"
-        self.authors = ["Jack Rosenthal", "Charlie McConnell", "Jacob Thompson"]
-
-about = Gtk.Dialog(AboutBlitzLocker())
-
 def show_about_dialog(item):
+    about = Gtk.AboutDialog()
+    about.set_transient_for(None)
+    about.set_program_name('BlitzLocker')
+    about.set_version('0.0.1')
+    about.set_comments("A password manager for SalesForce")
+    about.set_authors(["Jack Rosenthal", "Charlie McConnell", "Jacob Thompson"])
     about.run()
+    about.destroy()
