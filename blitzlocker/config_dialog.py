@@ -9,6 +9,7 @@ class ConfigDialog(Gtk.Window):
         Gtk.Window.__init__(self, title="Configure BlitzLocker")
         self.set_default_size(640, 480)
         self.set_resizable(False)
+        self.set_deletable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.vbox = Gtk.Box()
         self.vbox.set_orientation(Gtk.Orientation.VERTICAL)
@@ -33,7 +34,7 @@ class ConfigDialog(Gtk.Window):
 
         self.notebook.show_all()
 
-    def ok_clicked(self, widget):
+    def ok_clicked(self, *args, **kwargs):
         self.hide()
 
 class SitesPage(Gtk.Box):
@@ -52,6 +53,7 @@ class SitesPage(Gtk.Box):
         self.bbox.add(self.rm_site_button)
 
         self.add_site_button.connect("clicked", self.open_add_site)
+        self.rm_site_button.connect("clicked", self.rm_site)
 
         self.add(self.bbox)
 
@@ -66,6 +68,8 @@ class SitesPage(Gtk.Box):
 
         self.treeview = Gtk.TreeView(self.liststore)
         self.treeview.append_column(self.column)
+        self.select = self.treeview.get_selection()
+        self.select.connect("changed", self.selection_changed)
 
         self.scroll = Gtk.ScrolledWindow()
         self.scroll.set_vexpand(True)
@@ -77,6 +81,21 @@ class SitesPage(Gtk.Box):
     def open_add_site(self, widget):
         asd = AddSiteDialog(liststore=self.liststore, transient_for=self.window, modal=True)
         asd.present()
+
+    def rm_site(self, widget):
+        url = self.liststore[self.selected_treeiter][0]
+        del self.liststore[self.selected_treeiter]
+        db.commit()
+        db.query(Site).filter(Site.base_url == url).delete(synchronize_session=False)
+        db.commit()
+
+    def selection_changed(self, selection):
+        model, treeiter = selection.get_selected()
+        if treeiter:
+            self.rm_site_button.set_sensitive(True)
+            self.selected_treeiter = treeiter
+        else:
+            self.rm_site_button.set_sensitive(False)
 
 class BrowserPage(Gtk.Box):
     def __init__(self, window):
