@@ -1,5 +1,6 @@
 from blitzlocker.db import Site, Org, db
 from blitzlocker import Gtk, Gdk
+from blitzlocker.browserutil import open_configured_browser
 
 class LoginDialog(Gtk.Window):
     def __init__(self):
@@ -81,7 +82,7 @@ class LoginDialog(Gtk.Window):
 
     def repopulate_org(self):
         self.org_list.clear()
-        for org in self.site.orgs:
+        for org in db.query(Site).filter(Site.base_url==self.site).one().orgs:
             self.org_list.append([org.username, org.password])
         self.org_tree.set_model(self.org_list)
 
@@ -93,6 +94,12 @@ class LoginDialog(Gtk.Window):
         self.hide()
 
     def click_login(self, button):
+        open_configured_browser(self.site +
+                '?un=' +
+                self.org[0] +
+                '&pw=' +
+                self.org[1]
+                )
         print('login clicked')
 
 login_dialog = LoginDialog()
