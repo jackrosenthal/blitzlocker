@@ -59,6 +59,7 @@ class ManageOrgsDialog(Gtk.Window):
         self.org_tree.append_column(user_column)
         self.org_tree.append_column(pass_column)
         self.org_tree.append_column(desc_column)
+        self.org_tree.get_selection().connect('changed', self.edit_description)
         self.org_scroll.set_vexpand(True)
         self.org_scroll.add(self.org_tree)
         self.grid.attach_next_to(self.org_scroll,
@@ -79,9 +80,13 @@ class ManageOrgsDialog(Gtk.Window):
                 )
 
         self.add(self.grid)
-    
+
     def click_close(self, button):
         self.hide()
+
+    def edit_description(self, combo):
+        add = AddDescriptionDialog(combo)
+        add.present()
 
     def open_add_org(self, widget):
         self.active_combo = self.site_combo_box.get_active_iter()
@@ -91,6 +96,64 @@ class ManageOrgsDialog(Gtk.Window):
                 modal=True
                 )
         aod.present()
+
+class AddDescriptionDialog(Gtk.Dialog):
+    def __init__(self, combo):
+        Gtk.Dialog.__init__(self, title="Edit Description")
+        self.set_default_size(250, 100)
+        self.description_label = Gtk.Label('Description: ')
+        self.description_textbox = Gtk.Entry()
+        self.grid = Gtk.Grid()
+
+        tree, pathlist = combo.get_selected_rows()
+        for path in pathlist:
+            tree_iter = tree.get_iter(path)
+            self.id = tree.get_value(tree_iter, 0)
+            description = tree.get_value(tree_iter, 2)
+
+        #description field
+        self.description_textbox.set_text(description)
+        self.description_textbox.set_activates_default(True)
+        self.grid.add(self.description_label)
+        self.grid.attach_next_to(self.description_textbox,
+                self.description_label,
+                Gtk.PositionType.RIGHT,
+                1,
+                1,
+                )
+
+        #cancel button
+        self.cancel = Gtk.Button.new_with_label('Cancel')
+        self.cancel.connect('clicked', self.click_cancel)
+        self.grid.attach_next_to(self.cancel,
+                self.description_label,
+                Gtk.PositionType.BOTTOM,
+                1,
+                1,
+                )
+
+        #Accept button
+        self.accept = Gtk.Button.new_with_label('Accept')
+        self.accept.connect('clicked', self.click_accept)
+        self.grid.attach_next_to(self.accept,
+                self.cancel,
+                Gtk.PositionType.RIGHT,
+                1,
+                1,
+                )
+
+        self.get_content_area().add(self.grid)
+        self.show_all()
+
+    def click_cancel(self, button):
+        self.destroy()
+
+    def click_accept(self, button):
+        if self.description_textbox.get_text():
+            db.query(Org).filter(Org.username==self.id).first()\
+                    .description = self.description_textbox.get_text()
+            db.commit()
+            self.destroy()
 
 
 class AddOrgDialog(Gtk.Dialog):
