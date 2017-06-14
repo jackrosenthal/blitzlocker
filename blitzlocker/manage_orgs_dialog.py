@@ -1,5 +1,6 @@
 from blitzlocker.db import db, Site, Org, AppConfigItem
 from blitzlocker import Gtk, Gdk
+import random
 
 class ManageOrgsDialog(Gtk.Window):
     def __init__(self):
@@ -53,8 +54,8 @@ class ManageOrgsDialog(Gtk.Window):
         pass_column.pack_start(self.org_tree_cr, True)
         desc_column.pack_start(self.org_tree_cr, True)
         user_column.add_attribute(self.org_tree_cr, 'text', 0)
-        pass_column.add_attribute(self.org_tree_cr, 'text', 0)
-        desc_column.add_attribute(self.org_tree_cr, 'text', 0)
+        pass_column.add_attribute(self.org_tree_cr, 'text', 1)
+        desc_column.add_attribute(self.org_tree_cr, 'text', 2)
         self.org_tree.append_column(user_column)
         self.org_tree.append_column(pass_column)
         self.org_tree.append_column(desc_column)
@@ -94,6 +95,7 @@ class ManageOrgsDialog(Gtk.Window):
 
 class AddOrgDialog(Gtk.Dialog):
     def __init__(self, liststore,active_combo, *args, **kwargs):
+        self.site_url = None
         Gtk.Dialog.__init__(self, *args, title="Add Org", **kwargs)
         self.liststore = liststore
         self.set_default_size(250, 100)
@@ -124,6 +126,7 @@ class AddOrgDialog(Gtk.Dialog):
         self.pw_textbox.set_placeholder_text("********")
         self.pw_label = Gtk.Label("Password: ")
         self.gen_pw_button = Gtk.Button(label = 'Generate')
+        self.gen_pw_button.connect('clicked', self.on_generate_clicked)
 
         self.grid.attach_next_to(self.pw_label,self.user_label,Gtk.PositionType.BOTTOM,1,1)
         self.grid.attach_next_to(self.pw_textbox,self.pw_label,Gtk.PositionType.RIGHT,1,1)
@@ -145,15 +148,34 @@ class AddOrgDialog(Gtk.Dialog):
         self.get_content_area().add(self.grid)
         self.show_all()
 
+    def on_generate_clicked(self, button):
+        length = 15
+        chars = (list(range(97, 123)) +
+            list(range(65, 91)) +
+            list(range(48, 57))
+            )
+        pw = chr(chars[random.randint(0, len(chars)-11)])
+        while len(pw) < length:
+            pw += chr(chars[random.randint(0, len(chars)-1)])
+        self.pw_textbox.set_text(pw)
+
+    def on_site_combo_changed(self, combo):
+        self.site_url = combo.get_model()[combo.get_active()][0]
 
     def response(self, widget, response_id):
         if response_id == 0:
             self.destroy()
-        elif response_id == 1:
+        elif (response_id == 1 and
+            self.site_url and
+            self.user_textbox.get_text() and
+            self.desc_textbox.get_text()
+            ):
+            if not self.pw_textbox.get_text():
+                self.on_generate_clicked(None)
             user = self.user_textbox.get_text()
             pw = self.pw_textbox.get_text()
             desc = self.desc_textbox.get_text()
-            site = db.query(Site).filter(Site.base_url==self.site_url).all()
+            site = self.site_url
             db.add(Org(username = user,password = pw, description = desc, site_id = site[1]))
             db.commit()
             self.destroy()
