@@ -1,4 +1,4 @@
-from blitzlocker.db import db, Site, AppConfigItem
+from blitzlocker.db import db, Site, Org, AppConfigItem
 from blitzlocker import Gtk, Gdk
 
 class ManageOrgsDialog(Gtk.Window):
@@ -37,12 +37,12 @@ class ManageOrgsDialog(Gtk.Window):
 
     def open_add_org(self, widget):
         self.active_combo = self.site_combo_box.get_active_iter()
-        aod = AddOrgDialog(liststore=self.liststore, transient_for=self, modal=True)
+        aod = AddOrgDialog(liststore=self.liststore, active_combo = self.active_combo,transient_for=self, modal=True)
         aod.present()
 
 
 class AddOrgDialog(Gtk.Dialog):
-    def __init__(self, liststore, *args, **kwargs):
+    def __init__(self, liststore,active_combo, *args, **kwargs):
         Gtk.Dialog.__init__(self, *args, title="Add Org", **kwargs)
         self.liststore = liststore
         self.set_default_size(250, 100)
@@ -55,7 +55,8 @@ class AddOrgDialog(Gtk.Dialog):
         site_url_cr = Gtk.CellRendererText()
         self.site_combo_box.pack_start(site_url_cr,True)
         self.site_combo_box.add_attribute(site_url_cr,"text",0)
-        
+        self.site_combo_box.set_active_iter(active_combo)
+        self.site_combo_box.connect("changed", self.on_site_combo_changed)
         self.grid.attach(self.site_label,0,0,1,1)
         self.grid.attach_next_to(self.site_combo_box,self.site_label,Gtk.PositionType.RIGHT,2,1)
         
@@ -97,7 +98,14 @@ class AddOrgDialog(Gtk.Dialog):
         if response_id == 0:
             self.destroy()
         elif response_id == 1:
+            user = self.user_textbox.get_text()
+            pw = self.pw_textbox.get_text()
+            desc = self.desc_textbox.get_text()
+            site = db.query(Site).filter(Site.base_url==self.site_url).all()
+            db.add(Org(username = user,password = pw, description = desc, site_id = site[1]))
+            db.commit()
             self.destroy()
 
+   
 
 manage_orgs_dialog = ManageOrgsDialog()
