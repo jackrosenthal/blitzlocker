@@ -20,8 +20,8 @@ class LoginDialog(Gtk.Window):
 
         #The Site list
         self.site_list = Gtk.ListStore(str)
-        for self.site in db.query(Site).all():
-            self.site_list.append((self.site.base_url,))
+        for site in db.query(Site).all():
+            self.site_list.append((site.base_url,))
         self.site_combo = Gtk.ComboBox.new_with_model(self.site_list)
         self.site_combo.connect('changed', self.on_site_changed)
         self.site_combo_cr = Gtk.CellRendererText()
@@ -35,8 +35,11 @@ class LoginDialog(Gtk.Window):
         logins_name = Gtk.TreeViewColumn("Logins")
         self.org_tree = Gtk.TreeView(self.org_list)
         self.org_tree_cr = Gtk.CellRendererText()
-        for org in self.site.orgs:
-            self.org_list.append([org.username, org.password])
+        if(self.site not None and
+	    self.site.orgs not None
+	    ):
+            for org in self.site.orgs:
+                self.org_list.append([org.username, org.password])
         logins_name.pack_start(self.org_tree_cr, True)
         logins_name.add_attribute(self.org_tree_cr, 'text', 0)
         self.org_tree.append_column(logins_name)
@@ -82,8 +85,11 @@ class LoginDialog(Gtk.Window):
 
     def repopulate_org(self):
         self.org_list.clear()
-        for org in db.query(Site).filter(Site.base_url==self.site).one().orgs:
-            self.org_list.append([org.username, org.password])
+        if(self.site not None and
+	    self.site.orgs not None
+	    ):
+            for org in db.query(Site).filter(Site.base_url==self.site).one().orgs:
+                self.org_list.append([org.username, org.password])
         self.org_tree.set_model(self.org_list)
 
     def on_site_changed(self, combo):
