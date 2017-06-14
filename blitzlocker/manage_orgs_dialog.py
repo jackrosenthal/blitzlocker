@@ -5,7 +5,7 @@ class ManageOrgsDialog(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Manage Orgs")
         Gtk.Box.__init__(self)
-        self.set_default_size(230,320)
+        self.set_default_size(-1,320)
         self.resizable = False
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
 
@@ -32,14 +32,63 @@ class ManageOrgsDialog(Gtk.Window):
 
         self.add_org_button.connect("clicked", self.open_add_org)
 
-        #Copy pasta the treeveiw and make the cancell button
+        self.grid.attach_next_to(self.bbox,self.site_combo_box,
+                Gtk.PositionType.BOTTOM,
+                1,
+                2
+                )
 
-        self.grid.attach_next_to(self.bbox,self.site_combo_box,Gtk.PositionType.BOTTOM,1,2)
+        #Treeveiw display
+        self.org_list = Gtk.ListStore(str, str, str)
+        self.org_scroll = Gtk.ScrolledWindow()
+        user_column = Gtk.TreeViewColumn('Username')
+        pass_column = Gtk.TreeViewColumn('Password')
+        desc_column = Gtk.TreeViewColumn('Description')
+        self.org_tree = Gtk.TreeView(self.org_list)
+        self.org_tree_cr = Gtk.CellRendererText()
+        if db.query(Org).all():
+            for org in db.query(Org).all():
+                self.org_list.append((org.username, org.password, org. description))
+        user_column.pack_start(self.org_tree_cr, True)
+        pass_column.pack_start(self.org_tree_cr, True)
+        desc_column.pack_start(self.org_tree_cr, True)
+        user_column.add_attribute(self.org_tree_cr, 'text', 0)
+        pass_column.add_attribute(self.org_tree_cr, 'text', 0)
+        desc_column.add_attribute(self.org_tree_cr, 'text', 0)
+        self.org_tree.append_column(user_column)
+        self.org_tree.append_column(pass_column)
+        self.org_tree.append_column(desc_column)
+        self.org_scroll.set_vexpand(True)
+        self.org_scroll.add(self.org_tree)
+        self.grid.attach_next_to(self.org_scroll,
+                self.bbox,
+                Gtk.PositionType.BOTTOM,
+                1,
+                1,
+                )
+
+        #Close Button
+        self.close_button = Gtk.Button.new_with_label('Close')
+        self.close_button.connect('clicked', self.click_close)
+        self.grid.attach_next_to(self.close_button,
+                self.org_scroll,
+                Gtk.PositionType.BOTTOM,
+                1,
+                1,
+                )
+
         self.add(self.grid)
+    
+    def click_close(self, button):
+        self.hide()
 
     def open_add_org(self, widget):
         self.active_combo = self.site_combo_box.get_active_iter()
-        aod = AddOrgDialog(liststore=self.liststore, active_combo = self.active_combo,transient_for=self, modal=True)
+        aod = AddOrgDialog(liststore=self.liststore,
+                active_combo = self.active_combo,
+                transient_for=self, 
+                modal=True
+                )
         aod.present()
 
 
@@ -57,12 +106,9 @@ class AddOrgDialog(Gtk.Dialog):
         site_url_cr = Gtk.CellRendererText()
         self.site_combo_box.pack_start(site_url_cr,True)
         self.site_combo_box.add_attribute(site_url_cr,"text",0)
-<<<<<<< HEAD
         self.site_combo_box.set_active_iter(active_combo)
         self.site_combo_box.connect("changed", self.on_site_combo_changed)
-=======
 
->>>>>>> 5d5a00035c1689768607fd9a13be2edaa1d670ec
         self.grid.attach(self.site_label,0,0,1,1)
         self.grid.attach_next_to(self.site_combo_box,self.site_label,Gtk.PositionType.RIGHT,2,1)
 
@@ -111,7 +157,5 @@ class AddOrgDialog(Gtk.Dialog):
             db.add(Org(username = user,password = pw, description = desc, site_id = site[1]))
             db.commit()
             self.destroy()
-
-   
 
 manage_orgs_dialog = ManageOrgsDialog()
