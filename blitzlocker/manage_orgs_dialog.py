@@ -81,12 +81,20 @@ class ManageOrgsDialog(Gtk.Window):
 
         self.add(self.grid)
 
+    def refresh_tree(self):
+        self.org_list.clear()
+        if db.query(Org).all():
+            for org in db.query(Org).all():
+                self.org_list.append((org.username, org.password, org. description))
+        self.org_tree.set_model(self.org_list)
+
     def click_close(self, button):
         self.hide()
 
     def edit_description(self, combo):
         add = AddDescriptionDialog(combo)
         add.present()
+#        self.refresh_tree()
 
     def open_add_org(self, widget):
         self.active_combo = self.site_combo_box.get_active_iter()
@@ -96,6 +104,7 @@ class ManageOrgsDialog(Gtk.Window):
                 modal=True
                 )
         aod.present()
+ #       self.refresh_tree()
 
 class AddDescriptionDialog(Gtk.Dialog):
     def __init__(self, combo):
@@ -105,6 +114,7 @@ class AddDescriptionDialog(Gtk.Dialog):
         self.description_textbox = Gtk.Entry()
         self.grid = Gtk.Grid()
 
+        description = 'Description'
         tree, pathlist = combo.get_selected_rows()
         for path in pathlist:
             tree_iter = tree.get_iter(path)
