@@ -35,9 +35,7 @@ class LoginDialog(Gtk.Window):
         logins_name = Gtk.TreeViewColumn("Logins")
         self.org_tree = Gtk.TreeView(self.org_list)
         self.org_tree_cr = Gtk.CellRendererText()
-        if(self.site not None and
-	    self.site.orgs not None
-	    ):
+        if self.site and self.site.orgs:
             for org in self.site.orgs:
                 self.org_list.append([org.username, org.password])
         logins_name.pack_start(self.org_tree_cr, True)
