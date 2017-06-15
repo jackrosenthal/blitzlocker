@@ -6,15 +6,17 @@ class ManageOrgsDialog(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Manage Orgs")
         Gtk.Box.__init__(self)
-        self.set_default_size(-1,320)
+        self.set_default_size(300,320)
         self.set_resizable(False)
         self.set_deletable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.combo = None
         self.site = None
         self.connect('show', self.open)
+        self.connect('focus', self.refresh_tree)
 
-        self.grid = Gtk.Grid()
+        self.grid = Gtk.Box()
+        self.grid.set_orientation(Gtk.Orientation.VERTICAL)
 
         self.liststore = Gtk.ListStore(str)
         for site in db.query(Site).all():
@@ -32,16 +34,16 @@ class ManageOrgsDialog(Gtk.Window):
         self.add_org_button = Gtk.Button(label='Add Org...')
         self.rm_org_button = Gtk.Button(label='Remove Org', sensitive=False)
         self.bbox.add(self.add_org_button)
-        self.bbox.add(self.rm_org_button)
-
         self.add_org_button.connect("clicked", self.open_add_org)
         self.rm_org_button.connect("clicked",self.rm_org)
 
-        self.grid.attach_next_to(self.bbox,self.site_combo_box,
-                Gtk.PositionType.BOTTOM,
-                1,
-                2
-                )
+        #Edit Button
+        self.edit_button = Gtk.Button(label='Edit Org', sensitive=False)
+        self.edit_button.connect('clicked', self.click_edit)
+        self.bbox.add(self.edit_button)
+
+        self.bbox.add(self.rm_org_button)
+        self.grid.add(self.bbox)
 
         #Treeveiw display
         self.org_list = Gtk.ListStore(str, str, str)
@@ -66,12 +68,7 @@ class ManageOrgsDialog(Gtk.Window):
         self.org_tree.get_selection().connect('changed', self.edit_description)
         self.org_scroll.set_vexpand(True)
         self.org_scroll.add(self.org_tree)
-        self.grid.attach_next_to(self.org_scroll,
-                self.bbox,
-                Gtk.PositionType.BOTTOM,
-                1,
-                1,
-                )
+        self.grid.add(self.org_scroll)
 
         #The button box!
         self.button_box = Gtk.ButtonBox()
@@ -81,17 +78,7 @@ class ManageOrgsDialog(Gtk.Window):
         self.close_button.connect('clicked', self.click_close)
         self.button_box.add(self.close_button)
 
-        #Edit Button
-        self.edit_button = Gtk.Button.new_with_label('Edit Desc.')
-        self.edit_button.connect('clicked', self.click_edit)
-        self.button_box.add(self.edit_button)
-
-        self.grid.attach_next_to(self.button_box,
-                self.org_scroll,
-                Gtk.PositionType.BOTTOM,
-                1,
-                1,
-                )
+        self.grid.add(self.button_box)
 
         self.add(self.grid)
 
@@ -110,13 +97,22 @@ class ManageOrgsDialog(Gtk.Window):
         for site in db.query(Site).all():
             self.liststore.append([site.base_url])
         self.site_combo_box.set_model(self.liststore)
+        self.refresh_tree()
 
     def click_edit(self, button):
         if self.combo:
-            add = AddDescriptionDialog(self.combo)
-            add.present()
+            eod = AddOrgDialog(liststore=self.liststore,
+                active_combo=self.combo,
+                edit=1,
+                transient_for=self,
+                modal=True
+                )
+            eod.present()
+        self.refresh_tree()
+
     def edit_description(self, combo):
         self.combo = combo
+        self.edit_button.set_sensitive(True)
         self.rm_org_button.set_sensitive(True)
 
     def rm_org(self,widget):
@@ -133,7 +129,7 @@ class ManageOrgsDialog(Gtk.Window):
     def on_site_changed(self, combo):
         if combo.get_active() > -1:
             self.site = combo.get_model()[combo.get_active()][0]
-            self.refresh_tree()
+        self.refresh_tree()
 
     def open_add_org(self, widget):
         self.active_combo = self.site_combo_box.get_active_iter()
@@ -145,72 +141,16 @@ class ManageOrgsDialog(Gtk.Window):
         aod.present()
         self.refresh_tree()
 
-class AddDescriptionDialog(Gtk.Dialog):
-    def __init__(self, combo):
-        Gtk.Dialog.__init__(self, title="Edit Description")
-        self.set_default_size(250, 100)
-        self.description_label = Gtk.Label('Description: ')
-        self.description_textbox = Gtk.Entry()
-        self.grid = Gtk.Grid()
-
-        description = 'Description'
-        tree, pathlist = combo.get_selected_rows()
-        for path in pathlist:
-            tree_iter = tree.get_iter(path)
-            self.id = tree.get_value(tree_iter, 0)
-            description = tree.get_value(tree_iter, 2)
-
-        #description field
-        self.description_textbox.set_text(description)
-        self.description_textbox.set_activates_default(True)
-        self.grid.add(self.description_label)
-        self.grid.attach_next_to(self.description_textbox,
-                self.description_label,
-                Gtk.PositionType.RIGHT,
-                1,
-                1,
-                )
-
-        #cancel button
-        self.cancel = Gtk.Button.new_with_label('Cancel')
-        self.cancel.connect('clicked', self.click_cancel)
-        self.grid.attach_next_to(self.cancel,
-                self.description_label,
-                Gtk.PositionType.BOTTOM,
-                1,
-                1,
-                )
-
-        #Accept button
-        self.accept = Gtk.Button.new_with_label('Accept')
-        self.accept.connect('clicked', self.click_accept)
-        self.grid.attach_next_to(self.accept,
-                self.cancel,
-                Gtk.PositionType.RIGHT,
-                1,
-                1,
-                )
-
-        self.get_content_area().add(self.grid)
-        self.show_all()
-
-    def click_cancel(self, button):
-        self.destroy()
-
-    def click_accept(self, button):
-        if self.description_textbox.get_text():
-            db.query(Org).filter(Org.username==self.id).first()\
-                    .description = self.description_textbox.get_text()
-            db.commit()
-            self.destroy()
-
-
 class AddOrgDialog(Gtk.Dialog):
-    def __init__(self, liststore,active_combo, *args, **kwargs):
+    def __init__(self, liststore, active_combo, edit=0, *args, **kwargs):
         self.site_url = None
+        self.us = None
+        self.pw = None
+        self.de = None
         Gtk.Dialog.__init__(self, *args, title="Add Org", **kwargs)
         self.liststore = liststore
         self.set_default_size(250, 100)
+        self.edit = edit
 
         self.grid = Gtk.Grid()
 
@@ -223,7 +163,8 @@ class AddOrgDialog(Gtk.Dialog):
         self.site_combo_box.connect("changed", self.on_site_combo_changed)
 
         self.grid.attach(self.site_label,0,0,1,1)
-        self.grid.attach_next_to(self.site_combo_box,self.site_label, Gtk.PositionType.RIGHT, 2, 1)
+        self.grid.attach_next_to(self.site_combo_box,self.site_label,
+                Gtk.PositionType.RIGHT, 2, 1)
 
         self.user_textbox = Gtk.Entry()
         self.user_textbox.set_placeholder_text("Username ")
@@ -249,6 +190,16 @@ class AddOrgDialog(Gtk.Dialog):
         self.grid.attach_next_to(self.desc_label,self.pw_label,Gtk.PositionType.BOTTOM,1,1)
         self.grid.attach_next_to(self.desc_textbox,self.desc_label,Gtk.PositionType.RIGHT,2,1)
 
+        if edit:
+            tree,pathlist = active_combo.get_selected_rows()
+            for path in pathlist:
+                tree_iter = tree.get_iter(path)
+                self.us = tree.get_value(tree_iter, 0)
+                self.pw = tree.get_value(tree_iter, 1)
+                self.de = tree.get_value(tree_iter, 2)
+            self.user_textbox.set_text(self.us)
+            self.pw_textbox.set_text(self.pw)
+            self.desc_textbox.set_text(self.de)
 
         self.add_button("Cancel", 0)
         aob = self.add_button("Add Org", 1)
@@ -280,6 +231,10 @@ class AddOrgDialog(Gtk.Dialog):
             self.site_url and
             self.user_textbox.get_text()
             ):
+            if self.edit:
+                db.query(Org).filter(Org.username==self.us,
+                    Org.password==self.pw, Org.description==self.de)\
+                    .delete(synchronize_session=False)
             if not self.pw_textbox.get_text():
                 self.on_generate_clicked(None)
             user = self.user_textbox.get_text()

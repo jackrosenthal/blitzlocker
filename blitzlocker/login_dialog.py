@@ -16,8 +16,9 @@ class LoginDialog(Gtk.Window):
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.set_border_width(15)
         self.set_deletable(False)
-        self.set_default_size(-1, 320)
-        self.box = Gtk.Grid()
+        self.set_default_size(300, 320)
+        self.box = Gtk.Box()
+        self.box.set_orientation(Gtk.Orientation.VERTICAL)
         self.add(self.box)
 
         #The Site list
@@ -29,7 +30,7 @@ class LoginDialog(Gtk.Window):
         self.site_combo_cr = Gtk.CellRendererText()
         self.site_combo.pack_start(self.site_combo_cr, True)
         self.site_combo.add_attribute(self.site_combo_cr, 'text', 0)
-        self.box.attach(self.site_combo, 0, 0, self.COLS, self.ROWS)
+        self.box.add(self.site_combo)
 
         #The Org Tree
         self.org_list = Gtk.ListStore(str, str)
@@ -48,32 +49,20 @@ class LoginDialog(Gtk.Window):
         self.org_scroll.set_min_content_height(self.COLS)
         self.org_scroll.set_max_content_height(self.COLS)
         self.org_scroll.add(self.org_tree)
-        self.box.attach_next_to(self.org_scroll,
-                self.site_combo,
-                Gtk.PositionType.BOTTOM,
-                2*self.ROWS,
-                self.COLS,
-                )
+        self.box.add(self.org_scroll)
 
         #The Cancel Button
+        self.button_box = Gtk.ButtonBox()
         self.cancel_button = Gtk.Button.new_with_label('Cancel')
         self.cancel_button.connect('clicked', self.click_cancel)
-        self.box.attach_next_to(self.cancel_button,
-                self.org_scroll,
-                Gtk.PositionType.BOTTOM,
-                self.ROWS,
-                self.ROWS,
-                )
+        self.button_box.add(self.cancel_button)
 
         #The Login button
         self.login_button = Gtk.Button.new_with_label('Login')
         self.login_button.connect('clicked', self.click_login)
-        self.box.attach_next_to(self.login_button,
-                self.cancel_button,
-                Gtk.PositionType.RIGHT,
-                self.ROWS,
-                self.ROWS,
-                )
+        self.button_box.add(self.login_button)
+
+        self.box.add(self.button_box)
 
     def open(self, widget):
         #The Site list
@@ -110,6 +99,5 @@ class LoginDialog(Gtk.Window):
                 '?un=' + self.org[0] +
                 '&pw=' + self.org[1]
                 )
-        print('login clicked')
 
 login_dialog = LoginDialog()
