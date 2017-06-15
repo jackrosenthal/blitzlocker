@@ -71,22 +71,22 @@ class ManageOrgsDialog(Gtk.Window):
                 1,
                 )
 
+        #The button box!
+        self.button_box = Gtk.ButtonBox()
+
         #Close Button
         self.close_button = Gtk.Button.new_with_label('Close')
         self.close_button.connect('clicked', self.click_close)
-        self.grid.attach_next_to(self.close_button,
-                self.org_scroll,
-                Gtk.PositionType.BOTTOM,
-                1,
-                1,
-                )
+        self.button_box.add(self.close_button)
 
         #Edit Button
         self.edit_button = Gtk.Button.new_with_label('Edit Desc.')
         self.edit_button.connect('clicked', self.click_edit)
-        self.grid.attach_next_to(self.edit_button,
-                self.close_button,
-                Gtk.PositionType.RIGHT,
+        self.button_box.add(self.edit_button)
+
+        self.grid.attach_next_to(self.button_box,
+                self.org_scroll,
+                Gtk.PositionType.BOTTOM,
                 1,
                 1,
                 )
