@@ -5,7 +5,6 @@ import random
 class ManageOrgsDialog(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Manage Orgs")
-        Gtk.Box.__init__(self)
         self.set_default_size(300,320)
         self.set_resizable(False)
         self.set_deletable(False)
