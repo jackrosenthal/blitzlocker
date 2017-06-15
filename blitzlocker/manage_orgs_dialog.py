@@ -9,6 +9,8 @@ class ManageOrgsDialog(Gtk.Window):
         self.set_default_size(-1,320)
         self.resizable = False
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
+        self.combo = None
+        self.site = None
 
         self.grid = Gtk.Grid()
 
@@ -16,14 +18,13 @@ class ManageOrgsDialog(Gtk.Window):
         for site in db.query(Site).all():
             self.liststore.append([site.base_url])
 
-        self.treeview=Gtk.TreeView(self.liststore)
         self.site_combo_box = Gtk.ComboBox.new_with_model(self.liststore)
         site_url_cr = Gtk.CellRendererText()
         self.site_combo_box.pack_start(site_url_cr,True)
         self.site_combo_box.add_attribute(site_url_cr,"text",0)
+        self.site_combo_box.connect('changed', self.on_site_changed)
 
         self.grid.add(self.site_combo_box)
-
 
         self.bbox = Gtk.ButtonBox()
         self.add_org_button = Gtk.Button(label='Add Org...')
@@ -48,8 +49,8 @@ class ManageOrgsDialog(Gtk.Window):
         desc_column = Gtk.TreeViewColumn('Description')
         self.org_tree = Gtk.TreeView(self.org_list)
         self.org_tree_cr = Gtk.CellRendererText()
-        if db.query(Org).all():
-            for org in db.query(Org).all():
+        if db.query(Org).all() and self.site:
+            for org in db.query(Site).filter(Site.base_url==self.site).one().orgs:
                 self.org_list.append((org.username, org.password, org. description))
         user_column.pack_start(self.org_tree_cr, True)
         pass_column.pack_start(self.org_tree_cr, True)
@@ -69,7 +70,7 @@ class ManageOrgsDialog(Gtk.Window):
                 1,
                 1,
                 )
-        
+
         #Close Button
         self.close_button = Gtk.Button.new_with_label('Close')
         self.close_button.connect('clicked', self.click_close)
@@ -80,42 +81,61 @@ class ManageOrgsDialog(Gtk.Window):
                 1,
                 )
 
+        #Edit Button
+        self.edit_button = Gtk.Button.new_with_label('Edit Desc.')
+        self.edit_button.connect('clicked', self.click_edit)
+        self.grid.attach_next_to(self.edit_button,
+                self.close_button,
+                Gtk.PositionType.RIGHT,
+                1,
+                1,
+                )
+
         self.add(self.grid)
 
     def refresh_tree(self):
         self.org_list.clear()
-        if db.query(Org).all():
-            for org in db.query(Org).all():
-                self.org_list.append((org.username, org.password, org. description))
+        if db.query(Org).all() and self.site:
+            for org in db.query(Site).filter(Site.base_url==self.site).one().orgs:
+                self.org_list.append((org.username, org.password, org.description))
         self.org_tree.set_model(self.org_list)
 
     def click_close(self, button):
         self.hide()
 
+    def click_edit(self, button):
+        if self.combo:
+            add = AddDescriptionDialog(self.combo)
+            add.present()
+            self.rm_org_button.set_sensitive(True)
+            self.refresh_tree()
+
     def edit_description(self, combo):
-        add = AddDescriptionDialog(combo)
-        add.present()
-        self.rm_org_button.set_sensitive(True)
-#        self.refresh_tree()
+        self.combo = combo
 
     def rm_org(self,widget):
-        tree,pathlist = self.org_tree.get_selection().get_selected_rows()  
+        tree,pathlist = self.org_tree.get_selection().get_selected_rows()
         for path in pathlist:
             tree_iter = tree.get_iter(path)
             self.id = tree.get_value(tree_iter, 0)
             description = tree.get_value(tree_iter, 2)
-        db.query(Org).filter(Org.username==self.id,Org.description==description).delete(synchronize_session=False)
+        db.query(Org).filter(Org.username==self.id,Org.description==description)\
+                .delete(synchronize_session=False)
         db.commit()
+
+    def on_site_changed(self, combo):
+        self.site = combo.get_model()[combo.get_active()][0]
+        self.refresh_tree()
 
     def open_add_org(self, widget):
         self.active_combo = self.site_combo_box.get_active_iter()
         aod = AddOrgDialog(liststore=self.liststore,
                 active_combo = self.active_combo,
-                transient_for=self, 
+                transient_for=self,
                 modal=True
                 )
         aod.present()
- #       self.refresh_tree()
+        self.refresh_tree()
 
 class AddDescriptionDialog(Gtk.Dialog):
     def __init__(self, combo):
