@@ -104,7 +104,7 @@ class ManageOrgsDialog(Gtk.Window):
             tree_iter = tree.get_iter(path)
             self.id = tree.get_value(tree_iter, 0)
             description = tree.get_value(tree_iter, 2)
-        db.query(Org).filter(Org.username==self.id).delete(synchronize_session=False)
+        db.query(Org).filter(Org.username==self.id,Org.description==description).delete(synchronize_session=False)
         db.commit()
 
     def open_add_org(self, widget):
