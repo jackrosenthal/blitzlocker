@@ -7,8 +7,8 @@ class TrayIcon(Gtk.StatusIcon):
 
         self.set_from_icon_name("applications-internet")
         self.set_tooltip_text("BlitzLocker")
-        self.connect("activate", self.click_event)
+        self.connect("button-press-event", self.click_event)
 
-    def click_event(self, icon):
+    def click_event(self, *args):
         self.menu.show_all()
         self.menu.popup_at_pointer(None)
