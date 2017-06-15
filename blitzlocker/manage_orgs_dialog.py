@@ -82,12 +82,14 @@ class ManageOrgsDialog(Gtk.Window):
 
         self.add(self.grid)
 
-    def refresh_tree(self):
+    def refresh_tree(self=None, widget=None, trash=None):
         self.org_list.clear()
         if db.query(Org).all() and self.site:
             for org in db.query(Site).filter(Site.base_url==self.site).one().orgs:
                 self.org_list.append((org.username, org.password, org.description))
         self.org_tree.set_model(self.org_list)
+        self.edit_button.set_sensitive(False)
+        self.rm_org_button.set_sensitive(False)
 
     def click_close(self, button):
         self.hide()
@@ -140,6 +142,8 @@ class ManageOrgsDialog(Gtk.Window):
                 )
         aod.present()
         self.refresh_tree()
+
+manage_orgs_dialog = ManageOrgsDialog()
 
 class AddOrgDialog(Gtk.Dialog):
     def __init__(self, liststore, active_combo, edit=0, *args, **kwargs):
@@ -244,6 +248,5 @@ class AddOrgDialog(Gtk.Dialog):
             self.site_id, = db.query(Site.id).filter(Site.base_url==site).one()
             db.add(Org(username = user,password = pw, description = desc, site_id = self.site_id))
             db.commit()
+            manage_orgs_dialog.refresh_tree()
             self.destroy()
-
-manage_orgs_dialog = ManageOrgsDialog()
