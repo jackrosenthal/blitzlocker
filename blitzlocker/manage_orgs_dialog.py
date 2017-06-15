@@ -141,8 +141,6 @@ class AddDescriptionDialog(Gtk.Dialog):
     def __init__(self, combo):
         Gtk.Dialog.__init__(self, title="Edit Description")
         self.set_default_size(250, 100)
-        self.set_resizable(False)
-        self.set_deletable(False)
         self.description_label = Gtk.Label('Description: ')
         self.description_textbox = Gtk.Entry()
         self.grid = Gtk.Grid()
@@ -202,8 +200,6 @@ class AddDescriptionDialog(Gtk.Dialog):
 class AddOrgDialog(Gtk.Dialog):
     def __init__(self, liststore,active_combo, *args, **kwargs):
         self.site_url = None
-        self.set_resizable(False)
-        self.set_deletable(False)
         Gtk.Dialog.__init__(self, *args, title="Add Org", **kwargs)
         self.liststore = liststore
         self.set_default_size(250, 100)
@@ -216,11 +212,10 @@ class AddOrgDialog(Gtk.Dialog):
         site_url_cr = Gtk.CellRendererText()
         self.site_combo_box.pack_start(site_url_cr,True)
         self.site_combo_box.add_attribute(site_url_cr,"text",0)
-        self.site_combo_box.set_active_iter(active_combo)
         self.site_combo_box.connect("changed", self.on_site_combo_changed)
 
         self.grid.attach(self.site_label,0,0,1,1)
-        self.grid.attach_next_to(self.site_combo_box,self.site_label,Gtk.PositionType.RIGHT,2,1)
+        self.grid.attach_next_to(self.site_combo_box,self.site_label, Gtk.PositionType.RIGHT, 2, 1)
 
         self.user_textbox = Gtk.Entry()
         self.user_textbox.set_placeholder_text("Username ")
