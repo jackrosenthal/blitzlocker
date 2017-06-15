@@ -107,11 +107,9 @@ class ManageOrgsDialog(Gtk.Window):
         if self.combo:
             add = AddDescriptionDialog(self.combo)
             add.present()
-            self.rm_org_button.set_sensitive(True)
-            self.refresh_tree()
-
     def edit_description(self, combo):
         self.combo = combo
+        self.rm_org_button.set_sensitive(True)
 
     def rm_org(self,widget):
         tree,pathlist = self.org_tree.get_selection().get_selected_rows()
