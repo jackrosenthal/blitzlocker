@@ -12,7 +12,7 @@ default_menu_items = (
     ("Exit BlitzLocker", Gtk.main_quit),
     ("Configuration", show_all_func(config_dialog)),
     ("Manage Orgs", show_all_func(manage_orgs_dialog)),
-    ("Login using CL#...", Gtk.main_quit),
+#    ("Login using CL#...", Gtk.main_quit),
     ("Login...", show_all_func(login_dialog)),
 )
 
