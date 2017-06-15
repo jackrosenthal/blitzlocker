@@ -14,7 +14,7 @@ browsers = {
     'epiphany': {'private': '-i'},
     'midori': {'private': '--private'},
     'xdg-open': {},
-    'safari': {},
+    'Safari': {},
 }
 
 system_browsers = set()
@@ -23,6 +23,14 @@ for d in os.getenv("PATH").split(":"):
         for fn in os.listdir(d):
             if fn in browsers.keys():
                 system_browsers.add(fn)
+
+# For Mac OS X, we must search the Applications folder for browsers
+if os.path.isdir("/Applications"):
+    for path, dirs, files in os.walk("/Applications"):
+        for fn in files:
+            if fn in browsers.keys():
+                system_browsers.add(fn)
+                os.putenv("PATH", os.getenv("PATH") + ':' + path)
 
 def open_browser(browser, url, private=False):
     return subprocess.Popen(
@@ -34,7 +42,7 @@ def open_configured_browser(url):
             .filter(AppConfigItem.key == 'browser.choice')\
             .one_or_none()
     if not default_browser:
-        for b in ('xdg-open', 'chrome', 'firefox', 'safari'):
+        for b in ('xdg-open', 'chrome', 'firefox', 'Safari'):
             if b in system_browsers:
                 default_browser = b
                 break
