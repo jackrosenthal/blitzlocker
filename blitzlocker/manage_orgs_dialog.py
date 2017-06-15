@@ -32,6 +32,7 @@ class ManageOrgsDialog(Gtk.Window):
         self.bbox.add(self.rm_org_button)
 
         self.add_org_button.connect("clicked", self.open_add_org)
+        self.rm_org_button.connect("clicked",self.rm_org)
 
         self.grid.attach_next_to(self.bbox,self.site_combo_box,
                 Gtk.PositionType.BOTTOM,
@@ -68,7 +69,7 @@ class ManageOrgsDialog(Gtk.Window):
                 1,
                 1,
                 )
-
+        
         #Close Button
         self.close_button = Gtk.Button.new_with_label('Close')
         self.close_button.connect('clicked', self.click_close)
@@ -94,7 +95,17 @@ class ManageOrgsDialog(Gtk.Window):
     def edit_description(self, combo):
         add = AddDescriptionDialog(combo)
         add.present()
+        self.rm_org_button.set_sensitive(True)
 #        self.refresh_tree()
+
+    def rm_org(self,widget):
+        tree,pathlist = self.org_tree.get_selection().get_selected_rows()  
+        for path in pathlist:
+            tree_iter = tree.get_iter(path)
+            self.id = tree.get_value(tree_iter, 0)
+            description = tree.get_value(tree_iter, 2)
+        db.query(Org).filter(Org.username==self.id).delete(synchronize_session=False)
+        db.commit()
 
     def open_add_org(self, widget):
         self.active_combo = self.site_combo_box.get_active_iter()
@@ -240,8 +251,7 @@ class AddOrgDialog(Gtk.Dialog):
             self.destroy()
         elif (response_id == 1 and
             self.site_url and
-            self.user_textbox.get_text() and
-            self.desc_textbox.get_text()
+            self.user_textbox.get_text()
             ):
             if not self.pw_textbox.get_text():
                 self.on_generate_clicked(None)
@@ -249,7 +259,7 @@ class AddOrgDialog(Gtk.Dialog):
             pw = self.pw_textbox.get_text()
             desc = self.desc_textbox.get_text()
             site = self.site_url
-            db.add(Org(username = user,password = pw, description = desc, site_id = site[1]))
+            db.add(Org(username = user,password = pw, description = desc, site_id = site))
             db.commit()
             self.destroy()
 
