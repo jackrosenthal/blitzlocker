@@ -141,6 +141,8 @@ class AddDescriptionDialog(Gtk.Dialog):
     def __init__(self, combo):
         Gtk.Dialog.__init__(self, title="Edit Description")
         self.set_default_size(250, 100)
+        self.set_resizable(False)
+        self.set_deletable(False)
         self.description_label = Gtk.Label('Description: ')
         self.description_textbox = Gtk.Entry()
         self.grid = Gtk.Grid()
@@ -200,6 +202,8 @@ class AddDescriptionDialog(Gtk.Dialog):
 class AddOrgDialog(Gtk.Dialog):
     def __init__(self, liststore,active_combo, *args, **kwargs):
         self.site_url = None
+        self.set_resizable(False)
+        self.set_deletable(False)
         Gtk.Dialog.__init__(self, *args, title="Add Org", **kwargs)
         self.liststore = liststore
         self.set_default_size(250, 100)
