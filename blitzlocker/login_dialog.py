@@ -10,6 +10,8 @@ class LoginDialog(Gtk.Window):
         self.COLS = 5
 
         Gtk.Window.__init__(self, title="Login")
+
+        self.connect('show', self.open)
         self.set_resizable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.set_border_width(15)
@@ -73,6 +75,13 @@ class LoginDialog(Gtk.Window):
                 self.ROWS,
                 )
 
+    def open(self, widget):
+        #The Site list
+        self.site_list.clear()
+        for site in db.query(Site).all():
+            self.site_list.append((site.base_url,))
+        self.site_combo.set_model(self.site_list)
+
     def on_org_changed(self, combo):
         tree, pathlist = combo.get_selected_rows()
         for path in pathlist:
@@ -89,18 +98,17 @@ class LoginDialog(Gtk.Window):
         self.org_tree.set_model(self.org_list)
 
     def on_site_changed(self, combo):
-        self.site = combo.get_model()[combo.get_active()][0]
-        self.repopulate_org()
+        if combo.get_active() > -1:
+            self.site = combo.get_model()[combo.get_active()][0]
+            self.repopulate_org()
 
     def click_cancel(self, button):
         self.hide()
 
     def click_login(self, button):
         open_configured_browser(self.site +
-                '?un=' +
-                self.org[0] +
-                '&pw=' +
-                self.org[1]
+                '?un=' + self.org[0] +
+                '&pw=' + self.org[1]
                 )
         print('login clicked')
 

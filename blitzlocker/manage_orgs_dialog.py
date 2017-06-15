@@ -12,6 +12,7 @@ class ManageOrgsDialog(Gtk.Window):
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.combo = None
         self.site = None
+        self.connect('show', self.open)
 
         self.grid = Gtk.Grid()
 
@@ -104,6 +105,12 @@ class ManageOrgsDialog(Gtk.Window):
     def click_close(self, button):
         self.hide()
 
+    def open(self, widget):
+        self.liststore.clear()
+        for site in db.query(Site).all():
+            self.liststore.append([site.base_url])
+        self.site_combo_box.set_model(self.liststore)
+
     def click_edit(self, button):
         if self.combo:
             add = AddDescriptionDialog(self.combo)
@@ -124,8 +131,9 @@ class ManageOrgsDialog(Gtk.Window):
         self.refresh_tree()
 
     def on_site_changed(self, combo):
-        self.site = combo.get_model()[combo.get_active()][0]
-        self.refresh_tree()
+        if combo.get_active() > -1:
+            self.site = combo.get_model()[combo.get_active()][0]
+            self.refresh_tree()
 
     def open_add_org(self, widget):
         self.active_combo = self.site_combo_box.get_active_iter()
