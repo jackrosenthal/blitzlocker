@@ -7,7 +7,8 @@ class ManageOrgsDialog(Gtk.Window):
         Gtk.Window.__init__(self, title="Manage Orgs")
         Gtk.Box.__init__(self)
         self.set_default_size(-1,320)
-        self.resizable = False
+        self.set_resizable(False)
+        self.set_deletable(False)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.combo = None
         self.site = None
@@ -120,6 +121,7 @@ class ManageOrgsDialog(Gtk.Window):
         db.query(Org).filter(Org.username==self.id,Org.description==description)\
                 .delete(synchronize_session=False)
         db.commit()
+        self.refresh_tree()
 
     def on_site_changed(self, combo):
         self.site = combo.get_model()[combo.get_active()][0]
@@ -277,7 +279,8 @@ class AddOrgDialog(Gtk.Dialog):
             pw = self.pw_textbox.get_text()
             desc = self.desc_textbox.get_text()
             site = self.site_url
-            db.add(Org(username = user,password = pw, description = desc, site_id = site))
+            self.site_id, = db.query(Site.id).filter(Site.base_url==site).one()
+            db.add(Org(username = user,password = pw, description = desc, site_id = self.site_id))
             db.commit()
             self.destroy()
 
