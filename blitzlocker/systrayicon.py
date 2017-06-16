@@ -5,7 +5,7 @@ class TrayIcon(Gtk.StatusIcon):
         Gtk.StatusIcon.__init__(self)
         self.menu = menu
 
-        self.set_from_icon_name("applications-internet")
+        self.set_from_file("res/icon64.png")
         self.set_tooltip_text("BlitzLocker")
         self.connect("button-press-event", self.click_event)
 
