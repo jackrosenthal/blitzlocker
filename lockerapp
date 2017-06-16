@@ -4,10 +4,16 @@ import os
 if not os.path.isfile(db_file_path):
     seed()
 
+import sys
 from blitzlocker import Gtk
-from blitzlocker.systrayicon import TrayIcon
-from blitzlocker.blitzmenu import default_menu
 
-icon = TrayIcon(default_menu)
-icon.set_visible(True)
-Gtk.main()
+if sys.platform == 'darwin':
+    from blitzlocker.macosx_app import App
+    app = App()
+    app.run()
+else:
+    from blitzlocker.systrayicon import TrayIcon
+    from blitzlocker.blitzmenu import default_menu
+    icon = TrayIcon(default_menu)
+    icon.set_visible(True)
+    Gtk.main()
