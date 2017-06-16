@@ -23,10 +23,10 @@ if os.path.isdir("/Applications"):
     bpaths = ["/Applications/Google Chrome.app/Contents/MacOS",
               "/Applications/Safari.app/Contents/MacOS",
               "/Applications/Firefox.app/Contents/MacOS"]
-    os.putenv("PATH", os.getenv("PATH") + ':' + ':'.join(bpaths))
+    os.environ["PATH"] += ':' + ':'.join(bpaths)
 
 system_browsers = set()
-for d in os.getenv("PATH").split(":"):
+for d in os.environ["PATH"].split(":"):
     if os.path.isdir(d):
         for fn in os.listdir(d):
             if fn in browsers.keys():
