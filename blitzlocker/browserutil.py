@@ -7,6 +7,7 @@ browsers = {
     'chrome': {'private': '-incognito'},
     'chromium': {'private': '-incognito'},
     'chromium-browser': {'private': '-incognito'},
+    'Google Chrome': {'private': '-incognito'},
     'firefox': {'private': '--private-window'},
     'palemoon': {'private': '--private-window'},
     'iceweasel': {'private': '--private-window'},
