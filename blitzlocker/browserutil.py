@@ -17,20 +17,19 @@ browsers = {
     'Safari': {},
 }
 
+# For Mac OS X
+if os.path.isdir("/Applications"):
+    bpaths = ["/Applications/Google Chrome.app/Contents/MacOS",
+              "/Applications/Safari.app/Contents/MacOS",
+              "/Applications/Firefox.app/Contents/MacOS"]
+    os.putenv("PATH", os.getenv("PATH") + ':' + ':'.join(bpaths))
+
 system_browsers = set()
 for d in os.getenv("PATH").split(":"):
     if os.path.isdir(d):
         for fn in os.listdir(d):
             if fn in browsers.keys():
                 system_browsers.add(fn)
-
-# For Mac OS X, we must search the Applications folder for browsers
-if os.path.isdir("/Applications"):
-    for path, dirs, files in os.walk("/Applications"):
-        for fn in files:
-            if fn in browsers.keys():
-                system_browsers.add(fn)
-                os.putenv("PATH", os.getenv("PATH") + ':' + path)
 
 def open_browser(browser, url, private=False):
     return subprocess.Popen(
