@@ -25,6 +25,7 @@ You will need:
  * Python 2.7 or greater (Python 3.6 is reccomended)
  * PyGObject3 ([installation instructions](https://pygobject.readthedocs.io/en/latest/getting_started.html))
  * SQLAlchemy (`pip3 install sqlalchemy`)
+ * GTK+ 3.22
 
 After you have those dependencies installed, clone the repo and type
 `./lockerapp`. If you are using Unity, see [this SO
