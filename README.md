@@ -11,14 +11,25 @@ To install BlitzLocker, you will need a machine running Linux or Mac OS X.
 
 If you are running an Intel Macintosh with Mac OS X 10.9 or above, we have
 already packaged a [`.dmg` file for you with an application ready to
-go](http://inside.mines.edu/~jrosenth/blitzlocker/BlitzLocker.dmg). Just drag
+go](https://github.com/jackrosenthal/blitzlocker/releases/tag/v1.0.0). Just drag
 the application to your `Applications` folder.
 
 If you are running an earlier verision than 10.9 or a PowerPC Macintosh,
 BlitzLocker should still be compatible, you will have to just build the `.app`
 folder yourself (described below).
 
-### Linux
+### Linux (Ubuntu 14.04 or 16.04)
+
+Download the prebuilt binary from
+[here](https://github.com/jackrosenthal/blitzlocker/releases/tag/v1.0.0).
+
+Extract the tarball:
+
+    $ tar xf BlitzLocker_ubuntu14.04_amd64.tar.bz2
+
+And run the program using `./BlitzLocker_amd64.bin`.
+
+### Linux (systems which have GTK+ 3.22 or later)
 
 You will need:
 
@@ -28,15 +39,31 @@ You will need:
  * GTK+ 3.22
 
 After you have those dependencies installed, clone the repo and type
-`./lockerapp`. If you are using Unity, see [this SO
-post](https://askubuntu.com/questions/30742/how-do-i-access-and-enable-more-icons-to-be-in-the-system-tray)
-on how to get BlitzLocker in the system tray whitelist. If you want BlitzLocker
-to run at login, add it to your `.xprofile` or `.xinitrc`, like so:
+`./lockerapp`.
+
+## Running BlitzLocker at Login
+
+### Mac OS X
+
+Right click (or control-click) on the BlitzLocker dock icon and select "Open at
+Login".
+
+### Linux
+
+Add it to your `.xprofile` or `.xinitrc`, like so:
 
     #!/bin/bash
     # ... some stuff
     ~/blitzlocker/lockerapp &
     # ... some more stuff
+
+## Using the System Tray in Ubuntu's Unity environment
+
+Ubuntu's default environment, Unity, does not provide a system tray. This is
+part of Mark Shuttleworth's opinion against system tray icons. You can
+workaround his opinion by installing
+[this indicator](https://github.com/GGleb/indicator-systemtray-unity)
+that provides a system tray in Unity.
 
 ## Advanced Stuff: Building the Mac OS X `.app` folder and `.dmg` file
 
